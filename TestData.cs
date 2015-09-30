@@ -1,182 +1,102 @@
+//Programming using .NET advanced course
+//Code Example : TestData.cs
+//Farid Naisan Feb 2012 
+
+/// <summary>
+/// This class is only for the purpose of testing some 
+/// abstract methods.
+/// </summary>
+/// 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using FoodManagerApp.Foods;
 
 
 namespace FoodManagerApp
 {
-    public partial class MainForm : Form
+    //Enum defining a number of test animals
+    public enum Species
     {
-        //Use an instace of the FoodManager to handle 
-        //the food list (food registry)
-        private FoodManager m_foodManager = new FoodManager(); 
+        Bear,
+        Cat,
+        Panda,
+        Dove,
+        Pelican,
+        Cow,
+        Sheep,
+        Lion
+    }
 
-        public MainForm()
+    /// <summary>
+    /// This struct contains simple data related to
+    /// an animal.
+    /// </summary>
+    public struct TestData
+    {
+        private Species item;
+        private EaterType eater;
+
+        public TestData(Species item, EaterType eater)
         {
-            InitializeComponent();
-            
-            //My initializations
-            InitializeGUI();
-            UpdateGUI();
+            this.item = item;
+             this.eater = eater;
         }
+        public EaterType Item
+        { get { return eater; } }
+    
+    }
 
-        /// <summary>
-        /// Prepare the GUI with initilizations
-        /// </summary>
-        private void InitializeGUI()
-        { 
-            cmbCategory.DataSource = Enum.GetValues(typeof(FoodCategory));
+    /// <summary>
+    /// A container class that mains a number of objects of TestaData.
+    /// </summary>
+    public static class TestDataManager
+    {
+        private static  List<TestData> testItems = new List<TestData>();
 
-            // Force the ToolTip text to be displayed whether or not the form is active.
-            toolTip1.ShowAlways = true;
-
-            //Set up the tooltip text for conrols
-            string ingredientTips = "The ingrediensta are to be separated either by a comma ";
-            ingredientTips += "or a semi colon.  An ingredient can consist of several words.";
-            toolTip1.SetToolTip(this.txtIngriedients, ingredientTips);
-            toolTip1.SetToolTip(this.lstSpecies, "Select also an item from the animal list.");
-            
-            //Test of abstract methods
-            TestDataManager.AddTestData();
-            lstSpecies.DataSource = Enum.GetValues(typeof (Species));
-            lstSpecies.SelectedIndex = 0;
-            btnChange.Enabled = false;
-            btnDelete.Enabled = false;
+        //Set som test data in the registry
+        public static  void AddTestData()
+        {
+            try
+            {
+                testItems.Add(new TestData(Species.Bear, EaterType.Omnivorous));  //All eater
+                testItems.Add(new TestData(Species.Cat, EaterType.Omnivorous));   //All eater
+                testItems.Add(new TestData(Species.Panda, EaterType.Herbivore));   //Plant eater
+                testItems.Add(new TestData(Species.Cat, EaterType.Omnivorous));   //All eater
+                testItems.Add(new TestData(Species.Dove, EaterType.Omnivorous));   //All eater
+                testItems.Add(new TestData(Species.Cow, EaterType.Herbivore));   //All eater
+                testItems.Add(new TestData(Species.Sheep, EaterType.Herbivore));
+                testItems.Add(new TestData(Species.Lion, EaterType.Carnivora));
+            }
+            catch (Exception e)
+            {
+                System.Windows.Forms.MessageBox.Show(e.Message);
+            }
         }
-
-        /// <summary>
-        /// Everytime the model changes, update the data on GUI
-        /// </summary>
-        private void UpdateGUI()
+        public static TestData GetItemAt(int index)
         {
-            txtIngriedients.Text = string.Empty;
-            txtName.Text = string.Empty;
-
-            //Refresh the animal listbox
-            lstRegistryItems.Items.Clear();
-            lstRegistryItems.Items.AddRange(m_foodManager.GetFoodListStringArray());
-        }
-
-        /// <summary>
-        /// Testing animal foods require that different an item is selected on the 
-        /// animal listbox and the species listbox.
-        /// </summary>
-        /// <returns>true if items are selecte, false otherwise.</returns>
-        private bool ValidateListBoxSelections()
-        {
-            return (lstRegistryItems.SelectedIndex > -1) && (lstSpecies.SelectedIndex > -1);
-        }
-
-        /// <summary>
-        /// To test some abstract methods in the FoodManager classes, 
-        /// some test data is put in the program. This method checks
-        /// whether a test animal type (ex sheep) likes a food.
-        /// Each animal is classed as an eater type.  See the
-        /// TestData class.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnCheckFood_Click_1(object sender, EventArgs e)
-        {
-            if (!ValidateListBoxSelections())
-                return;
-
-            TestData animal = TestDataManager.GetItemAt(lstSpecies.SelectedIndex);
-            Food foodItem = m_foodManager.GetFoodItemAt(lstRegistryItems.SelectedIndex);
-
-            string animalReaction = "Ush! Put it away!  This makes me lose my appetite!";
-
-            if (foodItem.IsGoodFor(animal.Item))
-               animalReaction ="Yummy Yummy!!";
-
-            MessageBox.Show(animalReaction);
-        } 
-     
-        /// <summary>
-        /// Add a new animal item in the registry.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnAdd_Click(object sender, EventArgs e)
-        {
-            if (ValidateInput())
-                AddFoodItem();
+            if (CheckIndex(index))
+            {
+                return testItems[index];
+            }
             else
-                MessageBox.Show("Fill the name, ingredients and check the eater types and try again.", "Invalid input!");
+            {
+                return new TestData();  //empty struct
+            }
         }
 
         /// <summary>
-        /// Validate input.  A name for the food and a list av ingredients are 
-        /// to bu supplied by the user. The ingrediensta are to be separated 
-        /// either by a comma or a semi colon.  An ingredient can consist of several words.
+        /// Check so index is with the allowed range of the colelction boundaries.
         /// </summary>
-        /// <returns></returns>
-        private bool ValidateInput()
+        /// <param name="index"></param>
+        /// <returns>True if index is valid, false otherwise</returns>
+        /// <remarks>This function may be useful for client objects and therefore is
+        /// declared public.</remarks>
+        public static bool CheckIndex(int index)
         {
-            bool bok = (!string.IsNullOrEmpty(txtIngriedients.Text) & 
-                (!string.IsNullOrEmpty(txtName.Text)));
-            return bok;
+            return (testItems != null) & (index < testItems.Count) & (index >= 0);
         }
 
-        /// <summary>
-        /// Read the data from the GUI, set up an object and save the object in
-        /// the animal registry.
-        /// </summary>
-        private void AddFoodItem()
-        {
-            string name = txtIngriedients.Text;
-            string ingredients = txtName.Text;
-            
-            //Find out which category the 
-            FoodCategory foodType = (FoodCategory)cmbCategory.SelectedIndex;
-            Food foodItem = null; 
-
-            switch (foodType)
-            {
-                case FoodCategory.Meat:
-                    foodItem = new Meat();//Late binding                
-                    break; 
-
-                case FoodCategory.Vegetable:
-                    foodItem = new Vegeterian();//Late binding                
-                    break; 
-
-                case FoodCategory.Mixed:
-                    foodItem = new MixedFood();//Late binding    
-                    break; 
-            }
-
-            char[] delimeters = { ',', ';' }; //',' and/or ';' separated
-
-            //Set other info into the object
-            if (foodItem != null)
-            {
-                foodItem.Name = String.IsNullOrEmpty(txtName.Text) ? "No name" : txtName.Text;
-                foodItem.Ingredients = foodItem.GetIngredientsFromAStringList(txtIngriedients.Text, delimeters);
-
-                //Save the object into the registry
-                m_foodManager.Add(foodItem);
-                UpdateGUI();
-            }
-
-        }
-
-        private void btnChange_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnDelete_Click(object sender, EventArgs e)
-        {
-
-        }
-
-       
-      }
+    }
 }
